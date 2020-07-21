@@ -1,0 +1,22 @@
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<VBox fx:controller="client.RegController"
+      xmlns:fx="http://javafx.com/fxml" alignment="center" >
+
+
+    <Label text="Login" />
+    <TextField fx:id="loginField" promptText="login"/>
+    <Label text="Password" />
+    <PasswordField fx:id="passwordField" promptText="password"/>
+    <Label text="Nickname" />
+    <TextField fx:id="nicknameField" promptText="nickname"/>
+
+    <TextArea fx:id="textArea" VBox.vgrow="ALWAYS" editable="false"/>
+    <HBox>
+        <Button text="Создать аккаунт" onAction="#tryToReg" minWidth="50"/>
+        <Button text="Отмена" onAction="#clickCancelBtn" minWidth="50"/>
+    </HBox>
+
+
+</VBox>
