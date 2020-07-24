@@ -1,17 +1,21 @@
 package server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 
-public class ClientHandler {
+public class ClientHandler implements Serializable {
     Server server;
     Socket socket = null;
     DataInputStream in;
     DataOutputStream out;
-
+    String str;
+    File file;
+    InputStreamReader fis;
+//    OutputStreamWriter fos;
+    FileOutputStream fos;
     private String nick;
     private String login;
 
@@ -21,7 +25,6 @@ public class ClientHandler {
             this.socket = socket;
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
-
             new Thread(() -> {
                 try {
                     socket.setSoTimeout(5000);
@@ -60,20 +63,36 @@ public class ClientHandler {
                             if (token.length < 4) {
                                 continue;
                             }
-                            boolean b = server.getAuthService()
-                                    .registration(token[1],token[2],token[3]);
-                            if(b){
+                            boolean b = false;
+                            try {
+                                b = server.getAuthService()
+                                        .registration(token[1], token[2], token[3]);
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                            }
+                            if (b) {
                                 sendMsg("/regresult ok");
-                            }else{
+                            } else {
                                 sendMsg("/regresult failed");
                             }
                         }
                     }
 
 
+                    file = new File("history_" + login + ".txt");
+                    file.createNewFile();
+//                    fis = new InputStreamReader(new BufferedInputStream(new FileInputStream(str)), StandardCharsets.UTF_8);
+//                    fos = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(file)), StandardCharsets.UTF_8);
+                    fos = new FileOutputStream(file);
+
+
                     //цикл работы
+
                     while (true) {
-                        String str = in.readUTF();
+                        str = in.readUTF();
+                        System.out.println(str);
+
+                        fos.write((str + "\n").getBytes());
 
                         if (str.startsWith("/")) {
                             if (str.equals("/end")) {
@@ -94,9 +113,9 @@ public class ClientHandler {
                             server.broadcastMsg(this, str);
                         }
                     }
-                }catch (SocketTimeoutException e){
+                } catch (SocketTimeoutException e) {
                     sendMsg("/end");
-                }catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
                     System.out.println("Клиент отключился");
